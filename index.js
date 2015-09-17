@@ -3,8 +3,10 @@ var request = require('request'),
   qs = require('querystring'),
   util = require('util');
 
-var spark_jobserver = function() {
-  this.endpoint = 'http://10.0.3.39:8090';
+var spark_jobserver = function(host) {
+  host = typeof host !== 'undefined' ? host : 'localhost:8090';
+
+  this.endpoint = host;
 };
 
 spark_jobserver.prototype = {
@@ -68,14 +70,12 @@ spark_jobserver.prototype = {
     if('POST' == method) {
       options.body = body;
     }
-    console.log(options);
-    // request(options, function(err, res, body) {
-    //   console.log('here!');
-    //   if (typeof body != 'undefined') {
-    //     body = JSON.parse(body);
-    //   }
-    //   callback(err, body);
-    // });
+    request(options, function(err, res, body) {
+      if (typeof body != 'undefined') {
+        body = JSON.parse(body);
+      }
+      callback(err, body);
+    });
     return this;
   }
 };
