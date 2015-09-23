@@ -63,7 +63,8 @@ spark_jobserver.prototype = {
   command: function(path, querystring, body, callback, method) {
     var options = {
       method: method || 'GET',
-      uri: this.endpoint + "/" + path
+      uri: this.endpoint + "/" + path,
+      timeout: 5000
     };
     params = qs.stringify(querystring);
     options.uri += '?' + params;
