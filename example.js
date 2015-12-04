@@ -8,5 +8,3 @@ jobserver.jobs.start('theapp', 'com.foo.blah.awesome', {context: 'awesome', sync
 jobserver.jobs.result('5ab8f3f9-c7d1-42ec-87cb-344d0d0b5c5c', function(err, data){
   console.log(data);
 });
-
-// 5ab8f3f9-c7d1-42ec-87cb-344d0d0b5c5c
