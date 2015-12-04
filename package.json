@@ -17,6 +17,6 @@
   },
   "license": "ISC",
   "dependencies": {
-    "request": "^2.62.0"
+    "request": "^2.66.0"
   }
 }
