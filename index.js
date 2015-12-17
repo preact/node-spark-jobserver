@@ -1,12 +1,18 @@
-// ala https://github.com/chadsmith/node-namecheap/blob/master/namecheap.js
 var request = require('request'),
   qs = require('querystring'),
-  util = require('util');
+  util = require('util'),
+  SQS = require('aws-sqs');
 
-var spark_jobserver = function(host) {
-  host = typeof host !== 'undefined' ? host : 'localhost:8090';
+var spark_jobserver = function(options) {
+  this.endpoint = options.host || 'localhost:8090';
 
-  this.endpoint = host;
+  this.queue = '';
+  var queue_config = options.queue || '';
+
+  if (queue_config !== '') {
+    this.queue_name = queue_config.name;
+    this.queue = new SQS(queue_config.key, queue_config.secret, {region: queue_config.region});
+  }
 };
 
 spark_jobserver.prototype = {
@@ -48,6 +54,19 @@ spark_jobserver.prototype = {
         };
         for (var attr in options) { qs[attr] = options[attr]; }
         return instance.command('jobs', qs, body, callback, 'POST');
+      },
+      queue: function(app_name, class_path, options, body, callback) {
+        if (instance.queue === '') {
+          throw new Error("Queue not configured.");
+        }
+
+        var message = {
+          appName: app_name,
+          classPath: class_path,
+          options: options,
+          body: body
+        };
+        instance.queue.sendMessage(instance.queue_name, JSON.stringify(message), callback);
       },
       result: function(job_id, callback) {
         return instance.command('jobs/' + job_id, {}, '', callback);

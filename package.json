@@ -17,6 +17,7 @@
   },
   "license": "ISC",
   "dependencies": {
+    "aws-sqs": "0.0.6",
     "request": "^2.66.0"
   }
 }
