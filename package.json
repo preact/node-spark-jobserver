@@ -18,5 +18,8 @@
   "license": "ISC",
   "dependencies": {
     "request": "^2.66.0"
+  },
+  "optionalDependencies": {
+    "aws-sdk": "^2.2.24"
   }
 }
