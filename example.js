@@ -1,4 +1,4 @@
-var spark_jobserver = require('./spark_jobserver');
+var spark_jobserver = require('spark_jobserver');
 var config = {
   host: "localhost:8090",
   queue: {

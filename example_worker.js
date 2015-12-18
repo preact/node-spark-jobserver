@@ -1,7 +1,7 @@
 /**
  * NOTE: run `npm i sqs-worker` before doing this example
  */
-var spark_jobserver = require('./'),
+var spark_jobserver = require('spark_jobserver'),
   SQSWorker = require('sqs-worker');
 
 var config = {
