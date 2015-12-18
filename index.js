@@ -1,20 +1,10 @@
 var request = require('request'),
   qs = require('querystring'),
-  util = require('util'),
-  AWS = require('aws-sdk');
+  util = require('util');
 
 var spark_jobserver = function(options) {
+  this.options = options;
   this.endpoint = options.host || 'localhost:8090';
-
-  this.queue = '';
-  var queue_config = options.queue || '';
-
-  if (queue_config !== '') {
-    var region = queue_config.region || 'us-east-1';
-    this.queue_url = 'https://sqs.' + region + '.amazonaws.com' + queue_config.name;
-
-    this.queue = new AWS.SQS(queue_config);
-  }
 };
 
 spark_jobserver.prototype = {
@@ -58,7 +48,23 @@ spark_jobserver.prototype = {
         return instance.command('jobs', qs, body, callback, 'POST');
       },
       queue: function(app_name, class_path, options, body, callback) {
-        if (instance.queue === '') {
+        var AWS = '';
+        try {
+          AWS = require('aws-sdk');
+        } catch (ex) {
+          throw new Error("aws-sdk module not installed.");
+        }
+
+        var queue_config = instance.options.queue || '';
+        var queue = '';
+        var queue_url = '';
+        if (queue_config !== '') {
+          var region = queue_config.region || 'us-east-1';
+          queue_url = 'https://sqs.' + region + '.amazonaws.com' + queue_config.name;
+          queue = new AWS.SQS(queue_config);
+        }
+
+        if (queue === '') {
           throw new Error("Queue not configured.");
         }
 
@@ -68,8 +74,9 @@ spark_jobserver.prototype = {
           options: options,
           body: body
         };
-        instance.queue.sendMessage({
-          QueueUrl: instance.queue_url,
+
+        queue.sendMessage({
+          QueueUrl: queue_url,
           MessageBody: JSON.stringify(message)
         }, callback);
       },
