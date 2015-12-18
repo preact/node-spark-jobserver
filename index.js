@@ -1,12 +1,10 @@
-// ala https://github.com/chadsmith/node-namecheap/blob/master/namecheap.js
 var request = require('request'),
   qs = require('querystring'),
   util = require('util');
 
-var spark_jobserver = function(host) {
-  host = typeof host !== 'undefined' ? host : 'localhost:8090';
-
-  this.endpoint = host;
+var spark_jobserver = function(options) {
+  this.options = options;
+  this.endpoint = options.host || 'localhost:8090';
 };
 
 spark_jobserver.prototype = {
@@ -48,6 +46,39 @@ spark_jobserver.prototype = {
         };
         for (var attr in options) { qs[attr] = options[attr]; }
         return instance.command('jobs', qs, body, callback, 'POST');
+      },
+      queue: function(app_name, class_path, options, body, callback) {
+        var AWS = '';
+        try {
+          AWS = require('aws-sdk');
+        } catch (ex) {
+          throw new Error("aws-sdk module not installed.");
+        }
+
+        var queue_config = instance.options.queue || '';
+        var queue = '';
+        var queue_url = '';
+        if (queue_config !== '') {
+          var region = queue_config.region || 'us-east-1';
+          queue_url = 'https://sqs.' + region + '.amazonaws.com' + queue_config.name;
+          queue = new AWS.SQS(queue_config);
+        }
+
+        if (queue === '') {
+          throw new Error("Queue not configured.");
+        }
+
+        var message = {
+          appName: app_name,
+          classPath: class_path,
+          options: options,
+          body: body
+        };
+
+        queue.sendMessage({
+          QueueUrl: queue_url,
+          MessageBody: JSON.stringify(message)
+        }, callback);
       },
       result: function(job_id, callback) {
         return instance.command('jobs/' + job_id, {}, '', callback);
