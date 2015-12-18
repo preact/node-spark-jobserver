@@ -1,7 +1,7 @@
 var request = require('request'),
   qs = require('querystring'),
   util = require('util'),
-  SQS = require('aws-sqs');
+  AWS = require('aws-sdk');
 
 var spark_jobserver = function(options) {
   this.endpoint = options.host || 'localhost:8090';
@@ -10,8 +10,10 @@ var spark_jobserver = function(options) {
   var queue_config = options.queue || '';
 
   if (queue_config !== '') {
-    this.queue_name = queue_config.name;
-    this.queue = new SQS(queue_config.key, queue_config.secret, {region: queue_config.region});
+    var region = queue_config.region || 'us-east-1';
+    this.queue_url = 'https://sqs.' + region + '.amazonaws.com' + queue_config.name;
+
+    this.queue = new AWS.SQS(queue_config);
   }
 };
 
@@ -66,7 +68,10 @@ spark_jobserver.prototype = {
           options: options,
           body: body
         };
-        instance.queue.sendMessage(instance.queue_name, JSON.stringify(message), callback);
+        instance.queue.sendMessage({
+          QueueUrl: instance.queue_url,
+          MessageBody: JSON.stringify(message)
+        }, callback);
       },
       result: function(job_id, callback) {
         return instance.command('jobs/' + job_id, {}, '', callback);
