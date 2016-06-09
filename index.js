@@ -104,7 +104,12 @@ spark_jobserver.prototype = {
     }
     request(options, function(err, res, body) {
       if (typeof body != 'undefined') {
-        body = JSON.parse(body);
+        try {
+          body = JSON.parse(body);
+        }
+        catch (e) {
+          return callback(new Error('Invalid JSON from Jobserver'), null);
+        }
       }
       callback(err, body);
     });
